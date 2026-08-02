@@ -40,7 +40,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 // The Main Portal is the live home everyone lands in — open to ALL visitors,
 // signed in or not. The four partnership rooms — Gold, Platinum, Diamond and
 // Light — ask for a signed-in profile so your voice carries your name.
-const MAIN_CHANNEL = { id: "main", name: "Main Portal ✦", guestOpen: true };
+const MAIN_CHANNEL = { id: "main", name: "Main Portal", guestOpen: true };
 
 const ROOM_GROUPS = [
   {
@@ -52,10 +52,10 @@ const ROOM_GROUPS = [
     key: "partnership",
     label: "PARTNERSHIP ROOMS",
     rooms: [
-      { id: "gold", name: "Gold 🥇" },
-      { id: "platinum", name: "Platinum 🏆" },
-      { id: "diamond", name: "Diamond 💎" },
-      { id: "light", name: "Light 🕊️" },
+      { id: "gold", name: "Gold" },
+      { id: "platinum", name: "Platinum" },
+      { id: "diamond", name: "Diamond" },
+      { id: "light", name: "Light" },
     ],
   },
 ];
@@ -63,6 +63,20 @@ const ROOM_GROUPS = [
 const CHANNELS = ROOM_GROUPS.flatMap((g) =>
   g.rooms.map((room) => ({ ...room, groupKey: g.key, groupLabel: g.label }))
 );
+
+// Per-room line icons (SVG, inherit currentColor) — shown in the Rooms menu and
+// the chat header in place of the old emoji: Main Portal = gateway/arch,
+// Gold = medal, Platinum = trophy, Diamond = gem, Light = radiant sun.
+const ROOM_ICONS = {
+  main: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V11a7 7 0 0 1 14 0v10"/><path d="M3 21h18"/><path d="M12 21v-6"/></svg>',
+  gold: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3l3 6M16 3l-3 6M8 3h8"/><circle cx="12" cy="15" r="5.5"/></svg>',
+  platinum: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v4a5 5 0 0 1-10 0z"/><path d="M7 6H4.5a2.5 2.5 0 0 0 2.7 3.4M17 6h2.5a2.5 2.5 0 0 1-2.7 3.4"/><path d="M12 13v3M9 20h6M9.6 20l.4-4h4l.4 4"/></svg>',
+  diamond: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l3 5.5L12 21 3 8.5z"/><path d="M3 8.5h18M9 3l3 5.5L15 3M8.5 8.5 12 21M15.5 8.5 12 21"/></svg>',
+  light: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.1 5.1l1.8 1.8M17.1 17.1l1.8 1.8M18.9 5.1l-1.8 1.8M6.9 17.1l-1.8 1.8"/></svg>',
+};
+function roomIcon(id) {
+  return ROOM_ICONS[id] || ROOM_ICONS.main;
+}
 
 function channelById(id) {
   return CHANNELS.find((c) => c.id === id) || null;
@@ -210,12 +224,12 @@ async function editName() {
   if (state.rt && state.rtReady) state.rt.track({ name: trimmed });
 }
 
-// The Main Portal is open to EVERYONE (guests included). The four partnership
-// rooms — Gold, Platinum, Diamond, Light — ask for a signed-in profile.
+// Every room is open to EVERYONE — any visitor can freely change into any room,
+// signed in or not, so room-switching is never blocked. (Signed-in members'
+// messages persist to the DB; guests connect live like they do in the Main
+// Portal — the group labels are just topic headings.)
 function isChannelUnlocked(channel) {
-  if (!channel) return false;
-  if (channel.guestOpen) return true;
-  return !!state.session;
+  return !!channel;
 }
 
 // ---- realtime chat + presence ----
@@ -381,10 +395,9 @@ async function deleteMessage(id) {
 // On phones the panels render as a centered modal (see style.css); the body
 // `menu-open` class drives the dimmed backdrop behind them.
 function syncBackdrop() {
-  // On mobile the Rooms panel is a CENTERED modal, so it gets the dimmed
-  // backdrop; the profile menu is a plain dropdown and never dims the screen.
-  const roomsOpen = [...document.querySelectorAll(".rooms-panel")].some((p) => !p.hidden);
-  document.body.classList.toggle("menu-open", roomsOpen);
+  // No dimmed backdrop for any menu — opening the Rooms modal (or the profile
+  // dropdown) never dims the screen behind it.
+  document.body.classList.remove("menu-open");
 }
 function closeMenus() {
   document.querySelectorAll(".menu-panel").forEach((p) => (p.hidden = true));
@@ -473,7 +486,8 @@ function renderRoomsMenu() {
           const active = state.activeChannelId === channel.id;
           return `
             <li class="channel-item ${unlocked ? "" : "locked"} ${active ? "active" : ""}" data-channel="${channel.id}" title="${escapeHtml(channel.name)}">
-              ${unlocked ? "#" : "🔒"} ${escapeHtml(channel.name)}
+              <span class="room-ico">${roomIcon(channel.id)}</span>
+              <span class="room-name">${escapeHtml(channel.name)}</span>
             </li>`;
         })
         .join("");
@@ -491,7 +505,9 @@ function renderRoomsMenu() {
 
 function renderChatHeader() {
   const channel = channelById(state.activeChannelId);
-  document.getElementById("chatTitle").textContent = channel ? "# " + channel.name : "Pick a room";
+  const el = document.getElementById("chatTitle");
+  if (!channel) { el.textContent = "Pick a room"; return; }
+  el.innerHTML = `<span class="room-ico">${roomIcon(channel.id)}</span><span class="room-name">${escapeHtml(channel.name)}</span>`;
 }
 
 function renderPresence() {

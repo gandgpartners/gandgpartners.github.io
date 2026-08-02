@@ -245,15 +245,26 @@ a { color: inherit; text-decoration: none; }
 }
 .channel-group ul { list-style: none; margin: 0; padding: 0; }
 .channel-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   padding: 9px 10px;
   border-radius: 8px;
   font-size: 0.94rem;
   cursor: pointer;
   color: var(--ink);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
+.room-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.room-ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px; height: 18px;
+  flex-shrink: 0;
+  color: var(--cyan);
+}
+.room-ico svg { width: 18px; height: 18px; display: block; }
+.channel-item.active .room-ico { color: var(--magenta); }
 .channel-item:hover:not(.locked) { background: var(--surface-2); }
 .channel-item.active {
   background: rgba(0, 247, 255, 0.12);
@@ -285,7 +296,9 @@ a { color: inherit; text-decoration: none; }
   border-bottom: 1px solid var(--border);
   background: linear-gradient(180deg, rgba(0, 247, 255, 0.06), transparent);
 }
-.chat-title { font-weight: 600; }
+.chat-title { font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
+.chat-title .room-ico { width: 20px; height: 20px; color: var(--cyan); }
+.chat-title .room-ico svg { width: 20px; height: 20px; }
 .presence {
   font-size: 0.78rem;
   color: var(--ink-dim);
@@ -383,8 +396,8 @@ a { color: inherit; text-decoration: none; }
     z-index: 60;
   }
   /* The Rooms menu opens as a CENTERED modal on phones — fixed to the middle of
-     the screen no matter where its trigger sits, with a dimmed backdrop behind
-     it (driven by body.menu-open, toggled in syncBackdrop). */
+     the screen no matter where its trigger sits. No dimmed backdrop: the screen
+     behind it stays fully visible. A soft shadow lifts it off the page. */
   .rooms-panel {
     position: fixed;
     top: 50%;
@@ -395,13 +408,7 @@ a { color: inherit; text-decoration: none; }
     min-width: 0;
     max-width: calc(100vw - 32px);
     max-height: 76vh;
-  }
-  body.menu-open::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background: rgba(23, 18, 58, 0.45);
-    z-index: 50;
+    box-shadow: 0 24px 60px rgba(23, 18, 58, 0.28);
   }
   .channel-item { padding: 11px 12px; font-size: 0.96rem; }
   .auth-form { justify-content: flex-end; }
