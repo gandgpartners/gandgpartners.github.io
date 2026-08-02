@@ -28,13 +28,12 @@ html, body { height: 100%; }
 body {
   margin: 0;
   font-family: "Fredoka", sans-serif;
-  /* Zebra pattern — alternating diagonal stripes of magenta (#FA00FF) and
-     cyan (#00F7FF). Fixed so the stripes stay put behind the scrolling app. */
-  background: repeating-linear-gradient(
-    45deg,
-    #fa00ff 0, #fa00ff 46px,
-    #00f7ff 46px, #00f7ff 92px
-  );
+  /* Zebra pattern — organic wavy magenta/cyan stripes (#FA00FF / #00F7FF).
+     A seamless SVG tile; fixed so the stripes stay put behind the app. */
+  background-color: #00f7ff;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22200%22%20height%3D%22200%22%20viewBox%3D%220%200%20200%20200%22%3E%3Crect%20width%3D%22200%22%20height%3D%22200%22%20fill%3D%22%2300F7FF%22%2F%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23FA00FF%22%20stroke-width%3D%2254%22%20stroke-linecap%3D%22butt%22%3E%3Cpath%20d%3D%22M50.0%200%20L52.5%205%20L54.9%2010%20L57.3%2015%20L59.4%2020%20L61.3%2025%20L62.9%2030%20L64.3%2035%20L65.2%2040%20L65.8%2045%20L66.0%2050%20L65.8%2055%20L65.2%2060%20L64.3%2065%20L62.9%2070%20L61.3%2075%20L59.4%2080%20L57.3%2085%20L54.9%2090%20L52.5%2095%20L50.0%20100%20L47.5%20105%20L45.1%20110%20L42.7%20115%20L40.6%20120%20L38.7%20125%20L37.1%20130%20L35.7%20135%20L34.8%20140%20L34.2%20145%20L34.0%20150%20L34.2%20155%20L34.8%20160%20L35.7%20165%20L37.1%20170%20L38.7%20175%20L40.6%20180%20L42.7%20185%20L45.1%20190%20L47.5%20195%20L50.0%20200%22%2F%3E%3Cpath%20d%3D%22M170.0%200%20L169.8%205%20L169.0%2010%20L167.8%2015%20L166.2%2020%20L164.1%2025%20L161.8%2030%20L159.1%2035%20L156.2%2040%20L153.1%2045%20L150.0%2050%20L146.9%2055%20L143.8%2060%20L140.9%2065%20L138.2%2070%20L135.9%2075%20L133.8%2080%20L132.2%2085%20L131.0%2090%20L130.2%2095%20L130.0%20100%20L130.2%20105%20L131.0%20110%20L132.2%20115%20L133.8%20120%20L135.9%20125%20L138.2%20130%20L140.9%20135%20L143.8%20140%20L146.9%20145%20L150.0%20150%20L153.1%20155%20L156.2%20160%20L159.1%20165%20L161.8%20170%20L164.1%20175%20L166.2%20180%20L167.8%20185%20L169.0%20190%20L169.8%20195%20L170.0%20200%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  background-repeat: repeat;
+  background-size: 220px 220px;
   background-attachment: fixed;
   color: var(--ink);
   line-height: 1.5;
@@ -53,8 +52,8 @@ a { color: inherit; text-decoration: none; }
   /* NOTE: no backdrop-filter here. A filter/backdrop-filter on the header
      would make it the containing block for the fixed, centered Rooms modal on
      mobile — so its `top:50%` would center against the short header instead of
-     the viewport. Keep the header a plain (near-opaque) bar. */
-  background: rgba(255, 255, 255, 0.94);
+     the viewport. Keep the header a plain (opaque) bar. */
+  background: #ffffff;                     /* solid so the zebra never bleeds through */
   border-bottom: 1px solid var(--border);
 }
 .header-inner {
@@ -245,7 +244,7 @@ a { color: inherit; text-decoration: none; }
   right: 0;
   bottom: 0;
   z-index: 20;
-  background: rgba(255, 255, 255, 0.96);
+  background: #ffffff;                     /* solid so the zebra never bleeds through */
   border-top: 1px solid var(--border);
   box-shadow: 0 -8px 28px rgba(23, 18, 58, 0.10);
   padding-bottom: env(safe-area-inset-bottom);   /* clear iOS home indicator */
