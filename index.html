@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>G&amp;G — Glory &amp; Grace Partnership</title>
+<meta name="description" content="G&G — the partnership platform for Glory & Grace church. Sign in with your email, step into the Main Portal, and connect in real time with the partnership: Gold, Platinum, Diamond, and Light." />
+<meta name="theme-color" content="#ffffff" />
+<link rel="icon" type="image/svg+xml" href="assets/gg-logo.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="#top" class="brand">
+      <img src="assets/gg-logo.svg" alt="Glory &amp; Grace" class="brand-icon" />
+      <span class="brand-name">G<em>&amp;</em>G <span class="brand-sub">Glory &amp; Grace</span></span>
+    </a>
+
+    <nav class="header-nav">
+      <!-- Rooms: a clickable menu in the top right -->
+      <div class="menu" id="roomsMenu">
+        <button class="btn btn-ghost btn-small menu-trigger" id="roomsTrigger" aria-haspopup="true" aria-expanded="false">
+          Rooms <span class="caret">▾</span>
+        </button>
+        <div class="menu-panel rooms-panel" id="roomsPanel" hidden><!-- rendered by app.js --></div>
+      </div>
+
+      <!-- Profile / auth: also top right -->
+      <div id="profileBar" class="profile-bar"><!-- rendered by app.js --></div>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <section class="portal">
+    <div class="chat-pane">
+      <div class="chat-header">
+        <span id="chatTitle" class="chat-title">Main Portal ✦</span>
+        <span id="presence" class="presence"></span>
+      </div>
+      <div id="chatMessages" class="chat-messages"></div>
+      <form id="chatForm" class="chat-form">
+        <input id="chatInput" type="text" placeholder="Message the portal…" autocomplete="off" maxlength="2000" disabled />
+        <button type="submit" class="btn btn-primary btn-small" disabled>Send</button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
