@@ -364,27 +364,23 @@ a { color: inherit; text-decoration: none; }
   .portal { padding: 14px; }
   .chat-pane { min-height: 0; }
   .chat-messages { max-height: 62vh; }
-  /* Dropdowns become a CENTERED modal on phones — fixed to the middle of the
-     screen no matter where the trigger sits, with a dimmed backdrop behind. */
+  /* Every header menu (Rooms AND the profile / sign-in / edit-name menu) stays
+     a real DROP-DOWN on mobile — each drops straight down from its own trigger
+     in the top-right, never a centered modal and with no dimmed backdrop.
+     Anchored to the relatively-positioned .menu wrapper; width capped to the
+     viewport so a panel can't overflow off-screen. */
   .menu-panel {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    right: auto;
-    transform: translate(-50%, -50%);
-    width: min(360px, calc(100vw - 32px));
-    min-width: 0;
-    max-width: calc(100vw - 32px);
-    max-height: 76vh;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    left: auto;
+    transform: none;
+    width: max-content;
+    min-width: 200px;
+    max-width: calc(100vw - 24px);
+    max-height: 74vh;
     overscroll-behavior: contain;
     z-index: 60;
-  }
-  body.menu-open::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background: rgba(23, 18, 58, 0.45);
-    z-index: 50;
   }
   .channel-item { padding: 11px 12px; font-size: 0.96rem; }
   .auth-form { justify-content: flex-end; }
