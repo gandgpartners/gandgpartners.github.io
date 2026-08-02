@@ -260,7 +260,16 @@ a { color: inherit; text-decoration: none; }
    right up in the old header), and any dropdown must open UPWARD so it isn't
    pushed off the bottom of the screen. */
 .bottom-bar .profile-bar { justify-content: flex-start; }
-.bottom-bar .menu-panel { top: auto; bottom: calc(100% + 8px); }
+/* Open upward AND anchor to the LEFT of the trigger — the account controls sit
+   at the bottom-left, so a right-anchored panel would run off the left edge
+   (worse on phones). left:0 keeps the whole name menu on-screen everywhere. */
+.bottom-bar .menu-panel {
+  top: auto;
+  bottom: calc(100% + 8px);
+  left: 0;
+  right: auto;
+  max-width: calc(100vw - 28px);
+}
 
 /* GIVE — the church giving link, a rounded gradient call-to-action with a soft
    inner highlight, a shine that sweeps across on hover, and a gentle heartbeat.
