@@ -381,9 +381,10 @@ async function deleteMessage(id) {
 // On phones the panels render as a centered modal (see style.css); the body
 // `menu-open` class drives the dimmed backdrop behind them.
 function syncBackdrop() {
-  // The Rooms panel never dims the screen — only the profile panel does.
-  const anyOpen = [...document.querySelectorAll(".menu-panel:not(.rooms-panel)")].some((p) => !p.hidden);
-  document.body.classList.toggle("menu-open", anyOpen);
+  // On mobile the Rooms panel is a CENTERED modal, so it gets the dimmed
+  // backdrop; the profile menu is a plain dropdown and never dims the screen.
+  const roomsOpen = [...document.querySelectorAll(".rooms-panel")].some((p) => !p.hidden);
+  document.body.classList.toggle("menu-open", roomsOpen);
 }
 function closeMenus() {
   document.querySelectorAll(".menu-panel").forEach((p) => (p.hidden = true));
