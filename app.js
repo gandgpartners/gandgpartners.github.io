@@ -3,9 +3,9 @@
    Vanilla JS, no build step, served straight to the browser.
 
    A live partnership space: sign in with your email + password, get a
-   profile (a display name that's yours across devices), step into the live
-   Main Portal, and connect in real time in any partnership room —
-   Gold, Platinum, Diamond, and Light.
+   profile (a display name that's yours across devices), and step into the
+   live Main Portal. For now the Portal is the single room, and only the host
+   account may post — everyone else signs in, reads, and is present.
 
    Layout: rooms live in a "Rooms" dropdown menu at the top right; your
    profile lives in a profile dropdown next to it. The page itself is the
@@ -37,9 +37,10 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4k06QtH_wQn2jLPTYKEoKg_219yaujZ
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 // ---- rooms ----
-// The Main Portal is the live home everyone lands in — open to ALL visitors,
-// signed in or not. The four partnership rooms — Gold, Platinum, Diamond and
-// Light — ask for a signed-in profile so your voice carries your name.
+// For now there is ONE room: the Main Portal, the live home everyone lands in,
+// open to ALL visitors, signed in or not. The partnership rooms (Gold,
+// Platinum, Diamond, Light) have been retired for now — we'll build back out
+// from this single portal.
 const MAIN_CHANNEL = { id: "main", name: "Main Portal", guestOpen: true };
 
 const ROOM_GROUPS = [
@@ -48,31 +49,16 @@ const ROOM_GROUPS = [
     label: "THE PORTAL",
     rooms: [MAIN_CHANNEL],
   },
-  {
-    key: "partnership",
-    label: "PARTNERSHIP ROOMS",
-    rooms: [
-      { id: "gold", name: "Gold" },
-      { id: "platinum", name: "Platinum" },
-      { id: "diamond", name: "Diamond" },
-      { id: "light", name: "Light" },
-    ],
-  },
 ];
 
 const CHANNELS = ROOM_GROUPS.flatMap((g) =>
   g.rooms.map((room) => ({ ...room, groupKey: g.key, groupLabel: g.label }))
 );
 
-// Per-room line icons (SVG, inherit currentColor) — shown in the Rooms menu and
-// the chat header in place of the old emoji: Main Portal = gateway/arch,
-// Gold = medal, Platinum = trophy, Diamond = gem, Light = radiant sun.
+// Room line icon (SVG, inherits currentColor) — shown in the Rooms menu and
+// the chat header: Main Portal = gateway/arch.
 const ROOM_ICONS = {
   main: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V11a7 7 0 0 1 14 0v10"/><path d="M3 21h18"/><path d="M12 21v-6"/></svg>',
-  gold: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3l3 6M16 3l-3 6M8 3h8"/><circle cx="12" cy="15" r="5.5"/></svg>',
-  platinum: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v4a5 5 0 0 1-10 0z"/><path d="M7 6H4.5a2.5 2.5 0 0 0 2.7 3.4M17 6h2.5a2.5 2.5 0 0 1-2.7 3.4"/><path d="M12 13v3M9 20h6M9.6 20l.4-4h4l.4 4"/></svg>',
-  diamond: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l3 5.5L12 21 3 8.5z"/><path d="M3 8.5h18M9 3l3 5.5L15 3M8.5 8.5 12 21M15.5 8.5 12 21"/></svg>',
-  light: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.1 5.1l1.8 1.8M17.1 17.1l1.8 1.8M18.9 5.1l-1.8 1.8M6.9 17.1l-1.8 1.8"/></svg>',
 };
 function roomIcon(id) {
   return ROOM_ICONS[id] || ROOM_ICONS.main;
@@ -133,6 +119,17 @@ function isGuest() {
 // their own saved messages (a numeric DB id + a matching user_id).
 function canDelete(m) {
   return !!(state.session && m && m.user_id && m.user_id === state.session.user.id);
+}
+
+// For now, ONLY this account may post — everyone else can sign in, log in, read
+// and be present, but the composer stays closed to them. (The matching DB-level
+// lock lives in supabase/schema.sql; this is the client-side half.)
+const OWNER_EMAIL = "prophetdian@gmail.com";
+function canSend() {
+  return !!(
+    state.session &&
+    String(state.session.user.email || "").trim().toLowerCase() === OWNER_EMAIL
+  );
 }
 
 // Remember the last email so it's prefilled next time. The Supabase session is
@@ -324,6 +321,8 @@ async function sendMessage(content) {
   const text = content.trim();
   const channel = channelById(state.activeChannelId);
   if (!channel || !isChannelUnlocked(channel) || !text) return;
+  // Only the owner account may post (for now). Guests and other members read.
+  if (!canSend()) return;
 
   let msg = {
     id: null,
@@ -536,14 +535,23 @@ function renderMessages() {
   }
 
   const unlocked = isChannelUnlocked(channel);
-  input.disabled = !unlocked;
-  sendBtn.disabled = !unlocked;
-  input.placeholder = unlocked ? "Message the room…" : "Sign in to enter this room";
-
   if (!unlocked) {
-    box.innerHTML = `<p class="chat-placeholder">🔒 ${escapeHtml(channel.name)} is a partnership room — log in or join to step inside.</p>`;
+    input.disabled = true;
+    sendBtn.disabled = true;
+    box.innerHTML = `<p class="chat-placeholder">🔒 ${escapeHtml(channel.name)} — log in or join to step inside.</p>`;
     return;
   }
+
+  // The room is open to read for everyone, but for now only the owner account
+  // may post. Everyone else sees the conversation with the composer closed.
+  const mayPost = canSend();
+  input.disabled = !mayPost;
+  sendBtn.disabled = !mayPost;
+  input.placeholder = mayPost
+    ? "Message the portal…"
+    : state.session
+    ? "Only the host can post here for now"
+    : "Log in to follow the portal";
 
   const me = displayName();
   box.innerHTML = state.messages.length

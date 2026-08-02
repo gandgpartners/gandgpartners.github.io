@@ -34,11 +34,19 @@ create policy "messages are readable by everyone"
   on public.messages for select
   using (true);
 
--- Any signed-in member can post, but only as themselves.
+-- FOR NOW: only the host account (prophetdian@gmail.com) may post, and only as
+-- itself. Everyone else can sign in, read history and be present, but any
+-- insert they attempt is rejected at the database — so the "owner only can
+-- send" rule holds even if someone bypasses the client. To reopen posting to
+-- all members later, drop the email clause below.
 drop policy if exists "members insert their own messages" on public.messages;
-create policy "members insert their own messages"
+drop policy if exists "only the host posts" on public.messages;
+create policy "only the host posts"
   on public.messages for insert
-  with check (auth.uid() = user_id);
+  with check (
+    auth.uid() = user_id
+    and lower(auth.jwt() ->> 'email') = 'prophetdian@gmail.com'
+  );
 
 -- Members can delete their OWN messages (nobody else's) — "saved until you
 -- delete it".
