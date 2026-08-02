@@ -31,9 +31,9 @@ body {
   /* Zebra pattern — organic wavy magenta/cyan stripes (#FA00FF / #00F7FF).
      A seamless SVG tile; fixed so the stripes stay put behind the app. */
   background-color: #00f7ff;
-  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22200%22%20height%3D%22200%22%20viewBox%3D%220%200%20200%20200%22%3E%3Crect%20width%3D%22200%22%20height%3D%22200%22%20fill%3D%22%2300F7FF%22%2F%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23FA00FF%22%20stroke-width%3D%2254%22%20stroke-linecap%3D%22butt%22%3E%3Cpath%20d%3D%22M50.0%200%20L52.5%205%20L54.9%2010%20L57.3%2015%20L59.4%2020%20L61.3%2025%20L62.9%2030%20L64.3%2035%20L65.2%2040%20L65.8%2045%20L66.0%2050%20L65.8%2055%20L65.2%2060%20L64.3%2065%20L62.9%2070%20L61.3%2075%20L59.4%2080%20L57.3%2085%20L54.9%2090%20L52.5%2095%20L50.0%20100%20L47.5%20105%20L45.1%20110%20L42.7%20115%20L40.6%20120%20L38.7%20125%20L37.1%20130%20L35.7%20135%20L34.8%20140%20L34.2%20145%20L34.0%20150%20L34.2%20155%20L34.8%20160%20L35.7%20165%20L37.1%20170%20L38.7%20175%20L40.6%20180%20L42.7%20185%20L45.1%20190%20L47.5%20195%20L50.0%20200%22%2F%3E%3Cpath%20d%3D%22M170.0%200%20L169.8%205%20L169.0%2010%20L167.8%2015%20L166.2%2020%20L164.1%2025%20L161.8%2030%20L159.1%2035%20L156.2%2040%20L153.1%2045%20L150.0%2050%20L146.9%2055%20L143.8%2060%20L140.9%2065%20L138.2%2070%20L135.9%2075%20L133.8%2080%20L132.2%2085%20L131.0%2090%20L130.2%2095%20L130.0%20100%20L130.2%20105%20L131.0%20110%20L132.2%20115%20L133.8%20120%20L135.9%20125%20L138.2%20130%20L140.9%20135%20L143.8%20140%20L146.9%20145%20L150.0%20150%20L153.1%20155%20L156.2%20160%20L159.1%20165%20L161.8%20170%20L164.1%20175%20L166.2%20180%20L167.8%20185%20L169.0%20190%20L169.8%20195%20L170.0%20200%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22160%22%20height%3D%22200%22%20viewBox%3D%220%200%20160%20200%22%3E%3Crect%20width%3D%22160%22%20height%3D%22200%22%20fill%3D%22%2300F7FF%22%2F%3E%3Cg%20fill%3D%22%23FA00FF%22%3E%3Cpath%20d%3D%22M20.0%200%20L22.5%205%20L24.9%2010%20L27.3%2015%20L29.4%2020%20L31.3%2025%20L32.9%2030%20L34.3%2035%20L35.2%2040%20L35.8%2045%20L36.0%2050%20L35.8%2055%20L35.2%2060%20L34.3%2065%20L32.9%2070%20L31.3%2075%20L29.4%2080%20L27.3%2085%20L24.9%2090%20L22.5%2095%20L20.0%20100%20L17.5%20105%20L15.1%20110%20L12.7%20115%20L10.6%20120%20L8.7%20125%20L7.1%20130%20L5.7%20135%20L4.8%20140%20L4.2%20145%20L4.0%20150%20L4.2%20155%20L4.8%20160%20L5.7%20165%20L7.1%20170%20L8.7%20175%20L10.6%20180%20L12.7%20185%20L15.1%20190%20L17.5%20195%20L20.0%20200%20L60.0%20200%20L57.5%20195%20L55.1%20190%20L52.7%20185%20L50.6%20180%20L48.7%20175%20L47.1%20170%20L45.7%20165%20L44.8%20160%20L44.2%20155%20L44.0%20150%20L44.2%20145%20L44.8%20140%20L45.7%20135%20L47.1%20130%20L48.7%20125%20L50.6%20120%20L52.7%20115%20L55.1%20110%20L57.5%20105%20L60.0%20100%20L62.5%2095%20L64.9%2090%20L67.3%2085%20L69.4%2080%20L71.3%2075%20L72.9%2070%20L74.3%2065%20L75.2%2060%20L75.8%2055%20L76.0%2050%20L75.8%2045%20L75.2%2040%20L74.3%2035%20L72.9%2030%20L71.3%2025%20L69.4%2020%20L67.3%2015%20L64.9%2010%20L62.5%205%20L60.0%200%20Z%22%2F%3E%3Cpath%20d%3D%22M100.0%200%20L102.5%205%20L104.9%2010%20L107.3%2015%20L109.4%2020%20L111.3%2025%20L112.9%2030%20L114.3%2035%20L115.2%2040%20L115.8%2045%20L116.0%2050%20L115.8%2055%20L115.2%2060%20L114.3%2065%20L112.9%2070%20L111.3%2075%20L109.4%2080%20L107.3%2085%20L104.9%2090%20L102.5%2095%20L100.0%20100%20L97.5%20105%20L95.1%20110%20L92.7%20115%20L90.6%20120%20L88.7%20125%20L87.1%20130%20L85.7%20135%20L84.8%20140%20L84.2%20145%20L84.0%20150%20L84.2%20155%20L84.8%20160%20L85.7%20165%20L87.1%20170%20L88.7%20175%20L90.6%20180%20L92.7%20185%20L95.1%20190%20L97.5%20195%20L100.0%20200%20L140.0%20200%20L137.5%20195%20L135.1%20190%20L132.7%20185%20L130.6%20180%20L128.7%20175%20L127.1%20170%20L125.7%20165%20L124.8%20160%20L124.2%20155%20L124.0%20150%20L124.2%20145%20L124.8%20140%20L125.7%20135%20L127.1%20130%20L128.7%20125%20L130.6%20120%20L132.7%20115%20L135.1%20110%20L137.5%20105%20L140.0%20100%20L142.5%2095%20L144.9%2090%20L147.3%2085%20L149.4%2080%20L151.3%2075%20L152.9%2070%20L154.3%2065%20L155.2%2060%20L155.8%2055%20L156.0%2050%20L155.8%2045%20L155.2%2040%20L154.3%2035%20L152.9%2030%20L151.3%2025%20L149.4%2020%20L147.3%2015%20L144.9%2010%20L142.5%205%20L140.0%200%20Z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
   background-repeat: repeat;
-  background-size: 220px 220px;
+  background-size: 200px 250px;
   background-attachment: fixed;
   color: var(--ink);
   line-height: 1.5;
@@ -469,6 +469,7 @@ a { color: inherit; text-decoration: none; }
 
 .chat-form {
   display: flex;
+  align-items: center;             /* attach / input / send share one baseline */
   gap: 10px;
   padding: 12px 16px;
   border-top: 1px solid var(--border);
@@ -481,24 +482,36 @@ a { color: inherit; text-decoration: none; }
   border: 1px solid var(--border-strong);
   color: var(--ink);
   padding: 11px 14px;
-  border-radius: 8px;
+  border-radius: 12px;
   font-size: 0.94rem;
+  height: 46px;
 }
 .chat-form input::placeholder { color: var(--ink-dim); }
 .chat-form input:focus { outline: 2px solid var(--cyan); border-color: var(--cyan); }
 .chat-form input:disabled { opacity: 0.55; }
-/* Attach (photo/video) button — the + at the left of the composer. */
+/* Attach (photo/video) button — the + at the left of the composer. A square
+   magenta-outline button matching the input's height, filling on hover. */
 .chat-attach {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0;
-  width: 42px;
-  height: 42px;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
 }
-.chat-attach svg { width: 20px; height: 20px; }
+.chat-attach svg { width: 22px; height: 22px; }
+.chat-attach:not(:disabled):hover { background: rgba(250, 0, 255, 0.10); }
 .chat-attach:disabled { opacity: 0.4; cursor: not-allowed; }
+/* Send button — same height & radius as the attach button and the input. */
+.chat-form button[type="submit"] {
+  flex-shrink: 0;
+  height: 46px;
+  padding: 0 24px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+}
 
 /* Shared photos / videos inside a message — shown at a readable size, full
    quality preserved (the upload itself is never downscaled). */
