@@ -627,7 +627,9 @@ function renderMessages() {
   const box = document.getElementById("chatMessages");
   const channel = channelById(state.activeChannelId);
   const input = document.getElementById("chatInput");
-  const sendBtn = document.querySelector("#chatForm button");
+  // The submit button specifically — the form now also holds the attach (+)
+  // button, so a bare "#chatForm button" would grab the wrong one.
+  const sendBtn = document.querySelector('#chatForm button[type="submit"]');
 
   if (!channel) {
     box.innerHTML = `<p class="chat-placeholder">No room selected yet.</p>`;
