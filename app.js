@@ -49,16 +49,33 @@ const ROOM_GROUPS = [
     label: "THE PORTAL",
     rooms: [MAIN_CHANNEL],
   },
+  {
+    key: "rooms",
+    label: "ROOMS",
+    // These require a signed-in profile to step inside (the Main Portal stays
+    // open to guests). Posting everywhere is still host-only (see canSend()).
+    rooms: [
+      { id: "prophecy", name: "Prophecy" },
+      { id: "prayer", name: "Prayer" },
+      { id: "testimonies", name: "Testimonies" },
+      { id: "announcements", name: "Announcements" },
+    ],
+  },
 ];
 
 const CHANNELS = ROOM_GROUPS.flatMap((g) =>
   g.rooms.map((room) => ({ ...room, groupKey: g.key, groupLabel: g.label }))
 );
 
-// Room line icon (SVG, inherits currentColor) — shown in the Rooms menu and
-// the chat header: Main Portal = gateway/arch.
+// Room line icons (SVG, inherit currentColor) — shown in the Rooms menu and the
+// chat header: Main Portal = gateway/arch, Prophecy = scroll, Prayer = hands/
+// heart, Testimonies = speech bubble with a star, Announcements = megaphone.
 const ROOM_ICONS = {
   main: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V11a7 7 0 0 1 14 0v10"/><path d="M3 21h18"/><path d="M12 21v-6"/></svg>',
+  prophecy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h9a2 2 0 0 1 2 2v13a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V6"/><path d="M4 6a2 2 0 0 1 4 0v12"/><path d="M11 8h5M11 12h5"/></svg>',
+  prayer: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-4.35-9-8.28C1.4 10.2 2.4 6.5 5.6 6.5c1.9 0 3.2 1.1 6.4 4 3.2-2.9 4.5-4 6.4-4 3.2 0 4.2 3.7 2.6 6.22C18.5 16.65 12 21 12 21z"/></svg>',
+  testimonies: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H8l-4 4V6a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2z"/><path d="M12 7.5l1.2 2.4 2.6.3-1.9 1.8.5 2.6-2.4-1.3-2.4 1.3.5-2.6-1.9-1.8 2.6-.3z"/></svg>',
+  announcements: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4a1 1 0 0 0 1 1h3l5 4V5L7 9H4a1 1 0 0 0-1 1z"/><path d="M16 9a3 3 0 0 1 0 6"/><path d="M19 6.5a6 6 0 0 1 0 11"/></svg>',
 };
 function roomIcon(id) {
   return ROOM_ICONS[id] || ROOM_ICONS.main;
@@ -221,12 +238,12 @@ async function editName() {
   if (state.rt && state.rtReady) state.rt.track({ name: trimmed });
 }
 
-// Every room is open to EVERYONE — any visitor can freely change into any room,
-// signed in or not, so room-switching is never blocked. (Signed-in members'
-// messages persist to the DB; guests connect live like they do in the Main
-// Portal — the group labels are just topic headings.)
+// The Main Portal (guestOpen) is open to EVERYONE, signed in or not. Every other
+// room requires a signed-in profile to step inside — guests see it locked until
+// they log in. (Posting anywhere is separately host-only; see canSend().)
 function isChannelUnlocked(channel) {
-  return !!channel;
+  if (!channel) return false;
+  return channel.guestOpen || !!state.session;
 }
 
 // ---- realtime chat + presence ----
