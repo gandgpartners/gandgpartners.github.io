@@ -233,8 +233,53 @@ a { color: inherit; text-decoration: none; }
 .auth-form input:focus { outline: 2px solid var(--cyan); border-color: var(--cyan); }
 .auth-loading { color: var(--ink-dim); }
 
+/* ---- Bottom bar (account / sign-in + GIVE), fixed to the screen bottom ---- */
+.bottom-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  background: rgba(255, 255, 255, 0.96);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -8px 28px rgba(23, 18, 58, 0.10);
+  padding-bottom: env(safe-area-inset-bottom);   /* clear iOS home indicator */
+}
+.bottom-bar-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+/* In the bottom bar the account controls sit on the LEFT (they justify to the
+   right up in the old header), and any dropdown must open UPWARD so it isn't
+   pushed off the bottom of the screen. */
+.bottom-bar .profile-bar { justify-content: flex-start; }
+.bottom-bar .menu-panel { top: auto; bottom: calc(100% + 8px); }
+
+/* GIVE — the church giving link, styled as a warm gradient call-to-action. */
+.btn-give {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--brand-grad);
+  color: var(--white);
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  padding: 10px 22px;
+  border-radius: 999px;
+  box-shadow: 0 8px 20px rgba(250, 0, 255, 0.28);
+}
+.btn-give:hover { filter: brightness(1.06); box-shadow: 0 10px 24px rgba(250, 0, 255, 0.4); }
+.btn-give svg { width: 18px; height: 18px; display: block; }
+
 /* ---- Portal (full-width chat; rooms live in the header dropdown) ---- */
-.portal { flex: 1 0 auto; max-width: 900px; width: 100%; margin: 0 auto; padding: 22px 20px 28px; display: flex; }
+/* Extra bottom padding so the fixed bottom bar never covers the chat card. */
+.portal { flex: 1 0 auto; max-width: 900px; width: 100%; margin: 0 auto; padding: 22px 20px 96px; display: flex; }
 
 /* Room groups — used inside the Rooms dropdown panel */
 .channel-group { margin-bottom: 14px; }
@@ -386,7 +431,8 @@ a { color: inherit; text-decoration: none; }
 @media (max-width: 720px) {
   .header-inner { padding: 10px 14px; }
   .brand-sub { display: none; }
-  .portal { padding: 14px; }
+  .portal { padding: 14px 14px 92px; }
+  .bottom-bar-inner { padding: 8px 14px; }
   .chat-pane { min-height: 0; }
   .chat-messages { max-height: 62vh; }
   /* The profile / sign-in / edit-name menu stays a real DROP-DOWN on mobile —

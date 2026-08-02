@@ -33,9 +33,6 @@
         </button>
         <div class="menu-panel rooms-panel" id="roomsPanel" hidden><!-- rendered by app.js --></div>
       </div>
-
-      <!-- Profile / auth: also top right -->
-      <div id="profileBar" class="profile-bar"><!-- rendered by app.js --></div>
     </nav>
   </div>
 </header>
@@ -55,6 +52,17 @@
     </div>
   </section>
 </main>
+
+<!-- Bottom bar: the account / sign-in bar lives here now, alongside GIVE. -->
+<footer class="bottom-bar">
+  <div class="bottom-bar-inner">
+    <div id="profileBar" class="profile-bar"><!-- rendered by app.js --></div>
+    <a class="btn btn-give" href="https://www.paypal.com/ncp/payment/6NG4Q34ACBTCG" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 20.5S3.5 15.2 3.5 9.3A4.3 4.3 0 0 1 12 7.4a4.3 4.3 0 0 1 8.5 1.9c0 5.9-8.5 11.2-8.5 11.2z"/></svg>
+      GIVE
+    </a>
+  </div>
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="app.js"></script>
