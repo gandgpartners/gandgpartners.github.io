@@ -46,6 +46,10 @@
       </div>
       <div id="chatMessages" class="chat-messages"></div>
       <form id="chatForm" class="chat-form">
+        <input id="mediaInput" type="file" accept="image/*,video/*" hidden />
+        <button type="button" id="attachBtn" class="btn btn-outline btn-small chat-attach" title="Send a photo or video" aria-label="Send a photo or video" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
         <input id="chatInput" type="text" placeholder="Message the portal…" autocomplete="off" maxlength="2000" disabled />
         <button type="submit" class="btn btn-primary btn-small" disabled>Send</button>
       </form>

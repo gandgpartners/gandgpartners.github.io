@@ -149,6 +149,18 @@ function canSend() {
   );
 }
 
+// ---- media (photos + videos) ----
+// Public Storage bucket (supabase/schema.sql). Files are uploaded AS-IS — no
+// client-side resize or re-encode — so they keep their full original quality.
+const MEDIA_BUCKET = "media";
+// Safe object-path piece from a filename (keep the extension, strip the rest).
+function safeName(name) {
+  const n = String(name || "file");
+  const dot = n.lastIndexOf(".");
+  const ext = dot > -1 ? n.slice(dot + 1).toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 8) : "";
+  return Math.random().toString(36).slice(2, 8) + (ext ? "." + ext : "");
+}
+
 // Remember the last email so it's prefilled next time. The Supabase session is
 // persisted by the client, so a logged-in member stays logged in across
 // reloads and the browser's own password manager saves the password.
@@ -280,7 +292,7 @@ async function selectChannel(channelId) {
   try {
     const { data, error } = await sb
       .from("messages")
-      .select("id, channel_id, user_id, author_name, content, created_at")
+      .select("id, channel_id, user_id, author_name, content, media_url, media_kind, created_at")
       .eq("channel_id", channelId)
       .order("created_at", { ascending: true })
       .limit(200);
@@ -364,7 +376,7 @@ async function sendMessage(content) {
           author_name: msg.author_name,
           content: text,
         })
-        .select("id, channel_id, user_id, author_name, content, created_at")
+        .select("id, channel_id, user_id, author_name, content, media_url, media_kind, created_at")
         .single();
       if (!error && data) msg = { ...data, is_guest: false };
       else msg.id = clientId();
@@ -377,6 +389,79 @@ async function sendMessage(content) {
   }
 
   // Local echo (broadcast is self:false), then push live to the room.
+  if (state.activeChannelId === channel.id) {
+    state.messages.push(msg);
+    renderMessages();
+  }
+  if (state.rt && state.rtReady) {
+    state.rt.send({ type: "broadcast", event: "msg", payload: msg });
+  }
+}
+
+// Send a photo or video. Host-only (same gate as text). The file is uploaded to
+// Storage UNCHANGED — full original quality — and the message carries its public
+// URL. Any text currently in the box rides along as a caption.
+async function sendMedia(file) {
+  const channel = channelById(state.activeChannelId);
+  if (!channel || !isChannelUnlocked(channel) || !canSend() || !file) return;
+  const kind = file.type.startsWith("video/") ? "video" : file.type.startsWith("image/") ? "image" : null;
+  if (!kind) { alert("Please choose a photo or a video."); return; }
+
+  const input = document.getElementById("chatInput");
+  const caption = (input && input.value.trim()) || null;
+
+  const attachBtn = document.getElementById("attachBtn");
+  if (attachBtn) attachBtn.disabled = true; // guard against double-send while uploading
+
+  // Upload the ORIGINAL bytes as-is (no canvas/resize/compression) → full quality.
+  const path = `${channel.id}/${Date.now()}-${safeName(file.name)}`;
+  let publicUrl = null;
+  try {
+    const { error: upErr } = await sb.storage
+      .from(MEDIA_BUCKET)
+      .upload(path, file, { cacheControl: "3600", upsert: false, contentType: file.type || undefined });
+    if (upErr) { alert("Upload failed: " + upErr.message); return; }
+    publicUrl = sb.storage.from(MEDIA_BUCKET).getPublicUrl(path).data.publicUrl;
+  } catch (e) {
+    alert("Upload failed. Please try again.");
+    return;
+  } finally {
+    if (attachBtn) attachBtn.disabled = !canSend();
+  }
+
+  let msg = {
+    id: null,
+    channel_id: channel.id,
+    user_id: state.session.user.id,
+    author_name: displayName(),
+    is_guest: false,
+    content: caption,
+    media_url: publicUrl,
+    media_kind: kind,
+    created_at: new Date().toISOString(),
+  };
+
+  // Save the row so it persists and shares one id across clients.
+  try {
+    const { data, error } = await sb
+      .from("messages")
+      .insert({
+        channel_id: channel.id,
+        user_id: state.session.user.id,
+        author_name: msg.author_name,
+        content: caption,
+        media_url: publicUrl,
+        media_kind: kind,
+      })
+      .select("id, channel_id, user_id, author_name, content, media_url, media_kind, created_at")
+      .single();
+    if (!error && data) msg = { ...data, is_guest: false };
+    else msg.id = clientId();
+  } catch (e) {
+    msg.id = clientId();
+  }
+
+  if (input) input.value = "";
   if (state.activeChannelId === channel.id) {
     state.messages.push(msg);
     renderMessages();
@@ -564,6 +649,8 @@ function renderMessages() {
   const mayPost = canSend();
   input.disabled = !mayPost;
   sendBtn.disabled = !mayPost;
+  const attachBtn = document.getElementById("attachBtn");
+  if (attachBtn) attachBtn.disabled = !mayPost;
   input.placeholder = mayPost
     ? "Message the portal…"
     : state.session
@@ -578,11 +665,20 @@ function renderMessages() {
           const del = canDelete(m)
             ? `<button class="msg-del" data-id="${escapeHtml(String(m.id))}" title="Delete message" aria-label="Delete message">×</button>`
             : "";
+          const text = m.content ? `<span class="chat-text">${escapeHtml(m.content)}</span>` : "";
+          let media = "";
+          if (m.media_url) {
+            const url = escapeHtml(m.media_url);
+            media = m.media_kind === "video"
+              ? `<video class="chat-media" src="${url}" controls preload="metadata" playsinline></video>`
+              : `<a class="chat-media-link" href="${url}" target="_blank" rel="noopener noreferrer"><img class="chat-media" src="${url}" alt="shared photo" loading="lazy" /></a>`;
+          }
           return `
         <div class="chat-message">
           <span class="chat-author ${cls}">${escapeHtml(m.author_name || "partner")}</span>
           <span class="chat-time">${escapeHtml(formatTime(m.created_at))}</span>
-          <span class="chat-text">${escapeHtml(m.content)}</span>
+          ${text}
+          ${media}
           ${del}
         </div>`;
         })
@@ -633,4 +729,17 @@ document.addEventListener("DOMContentLoaded", () => {
     sendMessage(input.value);
     input.value = "";
   });
+
+  // Photo / video attach: the + button opens the file picker; picking a file
+  // uploads it at full quality and posts it (host-only).
+  const attachBtn = document.getElementById("attachBtn");
+  const mediaInput = document.getElementById("mediaInput");
+  if (attachBtn && mediaInput) {
+    attachBtn.addEventListener("click", () => { if (!attachBtn.disabled) mediaInput.click(); });
+    mediaInput.addEventListener("change", () => {
+      const file = mediaInput.files && mediaInput.files[0];
+      mediaInput.value = ""; // let the same file be picked again later
+      if (file) sendMedia(file);
+    });
+  }
 });

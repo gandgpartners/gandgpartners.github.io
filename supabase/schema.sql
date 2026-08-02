@@ -28,6 +28,41 @@ create index if not exists messages_channel_created_idx
 
 alter table public.messages enable row level security;
 
+-- ---- media messages (photos + videos) ----
+-- A message can carry a photo/video instead of (or alongside) text. media_url
+-- points at a public object in the 'media' storage bucket; media_kind is
+-- 'image' or 'video'. Files are stored UNCHANGED — full original quality.
+alter table public.messages add column if not exists media_url  text;
+alter table public.messages add column if not exists media_kind text;
+-- Allow media-only rows: content may be null, but a row must carry text OR media.
+alter table public.messages alter column content drop not null;
+alter table public.messages drop constraint if exists messages_content_check;
+alter table public.messages drop constraint if exists messages_content_len;
+alter table public.messages add constraint messages_content_len
+  check (content is null or char_length(content) <= 2000);
+alter table public.messages drop constraint if exists messages_has_body;
+alter table public.messages add constraint messages_has_body
+  check (content is not null or media_url is not null);
+
+-- Storage bucket 'media': public read, NO size limit (no downscaling on our
+-- side), host-only upload/delete.
+insert into storage.buckets (id, name, public, file_size_limit)
+  values ('media', 'media', true, null)
+  on conflict (id) do update set public = true, file_size_limit = null;
+drop policy if exists "media public read" on storage.objects;
+create policy "media public read" on storage.objects
+  for select using (bucket_id = 'media');
+drop policy if exists "host uploads media" on storage.objects;
+create policy "host uploads media" on storage.objects
+  for insert with check (
+    bucket_id = 'media' and lower(auth.jwt() ->> 'email') = 'prophetdian@gmail.com'
+  );
+drop policy if exists "host deletes media" on storage.objects;
+create policy "host deletes media" on storage.objects
+  for delete using (
+    bucket_id = 'media' and lower(auth.jwt() ->> 'email') = 'prophetdian@gmail.com'
+  );
+
 -- Everyone can read history (the app itself decides which rooms to show).
 drop policy if exists "messages are readable by everyone" on public.messages;
 create policy "messages are readable by everyone"
