@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="style.css?v=20260803a" />
+<link rel="stylesheet" href="style.css?v=20260803b" />
 </head>
 <body>
 
@@ -70,16 +70,13 @@
   </div>
 </footer>
 
-<!-- Full-quality media viewer: tap a photo/video to see it big; tap the backdrop
-     to close. Fills the screen WITHOUT the browser's native fullscreen (so no
-     "exit full screen" banner) and never navigates to a storage URL. -->
+<!-- Full-quality photo viewer: tap a photo to see it big; tap again to close.
+     Shows the original image itself — never navigates to a storage URL. -->
 <div id="lightbox" class="lightbox" hidden aria-hidden="true">
-  <img id="lightboxImg" alt="" hidden />
-  <video id="lightboxVideo" hidden controls playsinline webkit-playsinline
-         controlslist="nofullscreen noremoteplayback" disablepictureinpicture></video>
+  <img id="lightboxImg" alt="" />
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="app.js?v=20260803a"></script>
+<script src="app.js?v=20260803b"></script>
 </body>
 </html>
