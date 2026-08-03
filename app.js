@@ -709,7 +709,7 @@ function renderMessages() {
           if (m.media_url) {
             const url = escapeHtml(m.media_url);
             media = m.media_kind === "video"
-              ? `<video class="chat-media" src="${url}" controls preload="metadata" playsinline draggable="false"></video>`
+              ? `<video class="chat-media" src="${url}" controls controlslist="nofullscreen noremoteplayback" disablepictureinpicture preload="metadata" playsinline webkit-playsinline draggable="false"></video>`
               : `<img class="chat-media" src="${url}" alt="" loading="lazy" draggable="false" />`;
           }
           // Photos and videos show CLEAN — just the media (and any caption). No
