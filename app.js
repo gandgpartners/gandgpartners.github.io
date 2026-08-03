@@ -214,20 +214,39 @@ async function signUp(email, password, name) {
   const opts = name ? { data: { display_name: name } } : undefined;
   const { data, error } = await sb.auth.signUp({ email, password, options: opts });
   if (error) {
-    alert("Couldn't sign up: " + error.message);
+    // Email already taken → it's an existing account, so the password was just
+    // wrong. Point them back at Log in rather than "sign up failed".
+    if (/already|registered|exists/i.test(error.message)) {
+      alert("That email already has an account — check the password and Log in.");
+    } else {
+      alert("Couldn't create your account: " + error.message);
+    }
     return;
   }
-  // Email confirmation ON (default) → no session; user must click the link.
-  // Confirmation OFF → a session comes back and onAuthStateChange logs them in.
+  // With email confirmation turned OFF, a session comes straight back and
+  // onAuthStateChange signs them in immediately — no link to click. (If it were
+  // ever turned back on, there'd be no session and they'd confirm by email.)
   if (!data.session) {
-    alert("Welcome to the partnership! Check your email for a confirmation link, then log in.");
+    alert("Almost there — check your email for a confirmation link, then log in.");
   }
 }
 
 async function signIn(email, password) {
   rememberEmail(email);
   const { error } = await sb.auth.signInWithPassword({ email, password });
-  if (error) alert("Couldn't sign in: " + error.message);
+  if (!error) return;
+  // Supabase returns the same "Invalid login credentials" whether the email has
+  // no account OR the password is wrong — it won't say which. So offer to Join:
+  // if they confirm, we create the account right here (and they're logged in on
+  // the spot). If the email already existed, signUp tells them to fix the
+  // password instead.
+  if (/invalid login credentials/i.test(error.message)) {
+    if (!confirm(`No account signs in with ${email} yet.\n\nCreate one now with this email and password?`)) return;
+    const name = (prompt("Pick a display name for the partnership (shown in the rooms):") || "").trim().slice(0, 32);
+    await signUp(email, password, name);
+    return;
+  }
+  alert("Couldn't sign in: " + error.message);
 }
 
 async function signOut() {
@@ -492,6 +511,24 @@ async function deleteMessage(id) {
   }
 }
 
+// ---- full-quality photo lightbox ----
+function openLightbox(src) {
+  const lb = document.getElementById("lightbox");
+  const img = document.getElementById("lightboxImg");
+  if (!lb || !img) return;
+  img.src = src;
+  lb.hidden = false;
+  lb.setAttribute("aria-hidden", "false");
+}
+function closeLightbox() {
+  const lb = document.getElementById("lightbox");
+  const img = document.getElementById("lightboxImg");
+  if (!lb) return;
+  lb.hidden = true;
+  lb.setAttribute("aria-hidden", "true");
+  if (img) img.src = "";
+}
+
 // ---- menus (rooms + profile dropdowns in the header) ----
 // On phones the panels render as a centered modal (see style.css); the body
 // `menu-open` class drives the dimmed backdrop behind them.
@@ -673,12 +710,19 @@ function renderMessages() {
             const url = escapeHtml(m.media_url);
             media = m.media_kind === "video"
               ? `<video class="chat-media" src="${url}" controls preload="metadata" playsinline></video>`
-              : `<a class="chat-media-link" href="${url}" target="_blank" rel="noopener noreferrer"><img class="chat-media" src="${url}" alt="shared photo" loading="lazy" /></a>`;
+              : `<img class="chat-media" src="${url}" alt="" loading="lazy" />`;
           }
+          // Photos and videos show CLEAN — just the media (and any caption). No
+          // author name, no timestamp, no storage filename: the point is the
+          // picture/clip itself, at full quality. Text-only messages still carry
+          // their author + time as before.
+          const isMedia = !!m.media_url;
+          const author = isMedia ? "" : `<span class="chat-author ${cls}">${escapeHtml(m.author_name || "partner")}</span>`;
+          const time = isMedia ? "" : `<span class="chat-time">${escapeHtml(formatTime(m.created_at))}</span>`;
           return `
-        <div class="chat-message">
-          <span class="chat-author ${cls}">${escapeHtml(m.author_name || "partner")}</span>
-          <span class="chat-time">${escapeHtml(formatTime(m.created_at))}</span>
+        <div class="chat-message${isMedia ? " media-only" : ""}">
+          ${author}
+          ${time}
           ${text}
           ${media}
           ${del}
@@ -689,6 +733,10 @@ function renderMessages() {
 
   box.querySelectorAll(".msg-del").forEach((el) => {
     el.addEventListener("click", () => deleteMessage(el.dataset.id));
+  });
+  // Tap a photo to view it full-quality in the lightbox (no URL is opened).
+  box.querySelectorAll("img.chat-media").forEach((img) => {
+    img.addEventListener("click", () => openLightbox(img.src));
   });
   box.scrollTop = box.scrollHeight;
 }
@@ -720,10 +768,14 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   document.addEventListener("click", closeIfOutside);
   document.addEventListener("touchstart", closeIfOutside, { passive: true });
-  // Esc closes menus too.
+  // Esc closes menus too (and the photo lightbox).
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeMenus();
+    if (e.key === "Escape") { closeMenus(); closeLightbox(); }
   });
+
+  // Tapping the photo lightbox anywhere closes it.
+  const lightbox = document.getElementById("lightbox");
+  if (lightbox) lightbox.addEventListener("click", closeLightbox);
 
   document.getElementById("chatForm").addEventListener("submit", (e) => {
     e.preventDefault();
