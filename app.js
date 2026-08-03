@@ -511,22 +511,51 @@ async function deleteMessage(id) {
   }
 }
 
-// ---- full-quality photo lightbox ----
-function openLightbox(src) {
+// ---- full-quality media lightbox ----
+// Our OWN full-screen: fills the viewport with the photo/video without ever
+// calling the browser's native fullscreen — so there's no "exit full screen"
+// banner on any device, and no storage URL is opened.
+function openLightbox(src, kind) {
   const lb = document.getElementById("lightbox");
   const img = document.getElementById("lightboxImg");
-  if (!lb || !img) return;
-  img.src = src;
+  const vid = document.getElementById("lightboxVideo");
+  if (!lb) return;
+  if (kind === "video") {
+    if (img) { img.hidden = true; img.src = ""; }
+    if (vid) { vid.hidden = false; vid.src = src; try { vid.currentTime = 0; vid.play(); } catch (e) {} }
+  } else {
+    if (vid) { try { vid.pause(); } catch (e) {} vid.hidden = true; vid.src = ""; }
+    if (img) { img.hidden = false; img.src = src; }
+  }
   lb.hidden = false;
   lb.setAttribute("aria-hidden", "false");
 }
 function closeLightbox() {
   const lb = document.getElementById("lightbox");
   const img = document.getElementById("lightboxImg");
+  const vid = document.getElementById("lightboxVideo");
   if (!lb) return;
   lb.hidden = true;
   lb.setAttribute("aria-hidden", "true");
   if (img) img.src = "";
+  if (vid) { try { vid.pause(); } catch (e) {} vid.src = ""; }
+}
+// Belt-and-suspenders: these apps never use real fullscreen. If a video somehow
+// enters native fullscreen (what triggers the browser's "…to exit full screen"
+// banner), bounce straight back out so the banner can't stick on any device.
+function preventNativeFullscreen() {
+  const exit = () => {
+    const fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+    if (fsEl) {
+      try { (document.exitFullscreen || document.webkitExitFullscreen || function () {}).call(document); } catch (e) {}
+    }
+  };
+  document.addEventListener("fullscreenchange", exit);
+  document.addEventListener("webkitfullscreenchange", exit);
+  // Desktop double-click on a <video> also enters native fullscreen — block it.
+  document.addEventListener("dblclick", (e) => {
+    if (e.target && e.target.tagName === "VIDEO") e.preventDefault();
+  });
 }
 
 // ---- menus (rooms + profile dropdowns in the header) ----
@@ -709,7 +738,7 @@ function renderMessages() {
           if (m.media_url) {
             const url = escapeHtml(m.media_url);
             media = m.media_kind === "video"
-              ? `<video class="chat-media" src="${url}" controls controlslist="nofullscreen noremoteplayback" disablepictureinpicture preload="metadata" playsinline webkit-playsinline draggable="false"></video>`
+              ? `<span class="chat-video" data-src="${url}"><video class="chat-media" src="${url}" preload="metadata" muted playsinline webkit-playsinline draggable="false"></video><span class="video-play" aria-hidden="true">▶</span></span>`
               : `<img class="chat-media" src="${url}" alt="" loading="lazy" draggable="false" />`;
           }
           // Photos and videos show CLEAN — just the media (and any caption). No
@@ -736,7 +765,11 @@ function renderMessages() {
   });
   // Tap a photo to view it full-quality in the lightbox (no URL is opened).
   box.querySelectorAll("img.chat-media").forEach((img) => {
-    img.addEventListener("click", () => openLightbox(img.src));
+    img.addEventListener("click", () => openLightbox(img.src, "image"));
+  });
+  // Tap a video to play it big in the lightbox (our own full-screen, no banner).
+  box.querySelectorAll(".chat-video").forEach((el) => {
+    el.addEventListener("click", () => openLightbox(el.dataset.src, "video"));
   });
   box.scrollTop = box.scrollHeight;
 }
@@ -751,6 +784,7 @@ function render() {
 
 document.addEventListener("DOMContentLoaded", () => {
   render();
+  preventNativeFullscreen();
   refreshSession();
   sb.auth.onAuthStateChange(() => refreshSession());
 
@@ -773,9 +807,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.key === "Escape") { closeMenus(); closeLightbox(); }
   });
 
-  // Tapping the photo lightbox anywhere closes it.
+  // Tapping the lightbox backdrop closes it; clicks on the video itself (its
+  // play/pause/scrub controls) must NOT close it.
   const lightbox = document.getElementById("lightbox");
   if (lightbox) lightbox.addEventListener("click", closeLightbox);
+  const lightboxVideo = document.getElementById("lightboxVideo");
+  if (lightboxVideo) lightboxVideo.addEventListener("click", (e) => e.stopPropagation());
 
   document.getElementById("chatForm").addEventListener("submit", (e) => {
     e.preventDefault();

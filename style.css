@@ -542,6 +542,42 @@ img.chat-media { cursor: zoom-in; }
 .chat-message.media-only { padding-right: 22px; }
 .chat-message.media-only .chat-media { margin-top: 0; }
 
+/* Inline video = a tap-to-play thumbnail with a play badge. Tapping opens the
+   lightbox (our own full-screen), so no native video fullscreen / no banner. */
+.chat-video {
+  position: relative;
+  display: inline-block;
+  margin-top: 6px;
+  cursor: zoom-in;
+  line-height: 0;
+}
+.chat-message.media-only .chat-video { margin-top: 0; }
+.chat-video .chat-media { margin-top: 0; pointer-events: none; }
+.chat-video .video-play {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 56px; height: 56px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 1.5rem;
+  padding-left: 4px;
+  pointer-events: none;
+}
+
+/* Lightbox video fills the screen like the photo does. */
+.lightbox video {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 12px 44px rgba(0, 0, 0, 0.55);
+  background: #000;
+}
+
 /* Full-quality photo lightbox: the original image, contained to the screen,
    over a near-black backdrop. Tapping anywhere closes it. */
 .lightbox {
