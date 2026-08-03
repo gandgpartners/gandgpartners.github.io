@@ -535,8 +535,12 @@ a { color: inherit; text-decoration: none; }
 .chat-media-link { display: inline-block; }
 video.chat-media { max-width: min(420px, 100%); }
 img.chat-media { cursor: zoom-in; }
-/* Media-only messages sit clean and flush — no author/time line above them. */
+/* Photos/videos can't be dragged out of the message. */
+.chat-media { -webkit-user-drag: none; user-select: none; }
+/* Media-only messages sit clean and FLUSH — no author/time line and no gap
+   above the photo/video (the media starts right at the top of the message). */
 .chat-message.media-only { padding-right: 22px; }
+.chat-message.media-only .chat-media { margin-top: 0; }
 
 /* Full-quality photo lightbox: the original image, contained to the screen,
    over a near-black backdrop. Tapping anywhere closes it. */
