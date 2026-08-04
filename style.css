@@ -39,7 +39,24 @@ body {
   line-height: 1.5;
   display: flex;
   flex-direction: column;
-  min-height: 100%;
+  /* The app fills the screen exactly and the PAGE never scrolls — no browser
+     scrollbar at the side. The only scrollable region is .chat-messages, so
+     the room name (chat header), the composer and the bottom bar stay on
+     screen on every device. 100dvh tracks the real visible height on phones
+     (address bar show/hide). */
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* main hands the leftover height (viewport minus header and bottom bar) down
+   to .portal; min-height: 0 lets the chat shrink instead of pushing the page
+   taller. */
+main {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 a { color: inherit; text-decoration: none; }
@@ -242,12 +259,13 @@ a { color: inherit; text-decoration: none; }
 .auth-form input:focus { outline: 2px solid var(--cyan); border-color: var(--cyan); }
 .auth-loading { color: var(--ink-dim); }
 
-/* ---- Bottom bar (account / sign-in + GIVE), fixed to the screen bottom ---- */
+/* ---- Bottom bar (account / sign-in + GIVE) ----
+   A normal flex row at the bottom of the fixed-height body — NOT position:
+   fixed. The page never scrolls, so it sits at the screen bottom anyway, and
+   as a real layout row it can NEVER cover the composer, however tall it wraps
+   (signed-in profile controls can wrap to two rows on narrow phones). */
 .bottom-bar {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  flex-shrink: 0;
   z-index: 20;
   background: #ffffff;                     /* solid so the zebra never bleeds through */
   border-top: 1px solid var(--border);
@@ -340,9 +358,9 @@ a { color: inherit; text-decoration: none; }
   .btn-give:hover svg { animation: none; }
 }
 
-/* ---- Portal (full-width chat; rooms live in the header dropdown) ---- */
-/* Extra bottom padding so the fixed bottom bar never covers the chat card. */
-.portal { flex: 1 0 auto; max-width: 900px; width: 100%; margin: 0 auto; padding: 22px 20px 96px; display: flex; }
+/* ---- Portal (full-width chat; rooms live in the header dropdown) ----
+   The bottom bar is a real layout row now, so no oversized bottom padding. */
+.portal { flex: 1 1 auto; min-height: 0; max-width: 900px; width: 100%; margin: 0 auto; padding: 22px 20px; display: flex; }
 
 /* Room groups — used inside the Rooms dropdown panel */
 .channel-group { margin-bottom: 14px; }
@@ -398,7 +416,7 @@ a { color: inherit; text-decoration: none; }
   display: flex;
   flex-direction: column;
   min-width: 0;
-  min-height: 560px;
+  min-height: 0;
   border: 1px solid var(--border);
   border-radius: 18px;
   overflow: hidden;
@@ -436,15 +454,22 @@ a { color: inherit; text-decoration: none; }
 }
 .presence.empty::before { background: var(--ink-dim); box-shadow: none; }
 
+/* The ONLY scrolling region in the app. min-height: 0 (not a max-height cap)
+   is what makes it scroll inside the fixed-height pane, so the room name above
+   and the composer below never leave the screen. The scrollbar itself is
+   hidden on every browser — scrolling still works by wheel, drag and touch. */
 .chat-messages {
-  flex-grow: 1;
+  flex: 1 1 auto;
+  min-height: 0;
   padding: 16px 18px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-height: 440px;
+  scrollbar-width: none;      /* Firefox */
+  -ms-overflow-style: none;   /* old Edge/IE */
 }
+.chat-messages::-webkit-scrollbar { display: none; } /* Chrome/Safari */
 .chat-placeholder { color: var(--ink-dim); font-size: 0.9rem; margin: auto; text-align: center; max-width: 34ch; }
 .chat-message { font-size: 0.94rem; position: relative; padding-right: 22px; }
 .chat-author { color: var(--cyan); font-weight: 600; margin-right: 6px; }
@@ -568,10 +593,8 @@ img.chat-media { cursor: zoom-in; }
 @media (max-width: 720px) {
   .header-inner { padding: 10px 14px; }
   .brand-sub { display: none; }
-  .portal { padding: 14px 14px 92px; }
+  .portal { padding: 12px; }
   .bottom-bar-inner { padding: 8px 14px; }
-  .chat-pane { min-height: 0; }
-  .chat-messages { max-height: 62vh; }
   /* The profile / sign-in / edit-name menu stays a real DROP-DOWN on mobile —
      it drops straight down from its own top-right trigger. Anchored to the
      relatively-positioned .menu wrapper; width capped to the viewport. */
